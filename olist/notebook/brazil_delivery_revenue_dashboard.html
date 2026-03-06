@@ -13,29 +13,55 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #333;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #1a1a2e;
             min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.05" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .dashboard-header {
-            background: linear-gradient(135deg, #1a3d7c, #2c5aa0);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-top: none;
+            border-left: none;
+            border-right: none;
             color: white;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
         }
 
         .dashboard-title {
-            font-size: 32px;
-            font-weight: bold;
+            font-size: 36px;
+            font-weight: 700;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+            letter-spacing: -0.5px;
         }
 
         .dashboard-subtitle {
             font-size: 16px;
-            opacity: 0.9;
+            opacity: 0.95;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.15);
         }
 
         .dashboard-container {
@@ -45,13 +71,19 @@
             padding: 20px;
             max-width: 1400px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .filters-panel {
-            background: white;
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             height: fit-content;
             position: sticky;
             top: 20px;
@@ -66,73 +98,91 @@
         .checkbox-group {
             max-height: 180px;
             overflow-y: auto;
-            border: 1px solid #e0e7ff;
-            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
             padding: 12px;
-            background: #fafbff;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .checkbox-group::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
 
         .checkbox-group::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
         }
 
         .checkbox-group::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+        }
+
+        .checkbox-group::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.6);
         }
 
         .checkbox-item {
             display: flex;
             align-items: center;
             margin-bottom: 10px;
-            padding: 6px 8px;
-            border-radius: 5px;
-            transition: background-color 0.2s;
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
 
         .checkbox-item:hover {
-            background-color: #e0e7ff;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(3px);
         }
 
         .checkbox-item input {
             margin-right: 10px;
-            transform: scale(1.1);
+            transform: scale(1.15);
+            cursor: pointer;
         }
 
         .checkbox-item label {
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
+            color: rgba(255, 255, 255, 0.95);
         }
 
         .select-all-btn {
-            background: #f8faff;
-            border: 1px solid #d0e0ff;
-            padding: 6px 12px;
-            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 8px 14px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 12px;
             margin-bottom: 10px;
             width: 100%;
-            transition: all 0.2s;
-            font-weight: 500;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
         }
 
         .select-all-btn:hover {
-            background: #e0e7ff;
-            border-color: #b0c7ff;
+            background: rgba(255, 255, 255, 0.35);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .map-container {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             min-height: 600px;
         }
 
@@ -143,10 +193,14 @@
         }
 
         .chart-panel {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
         .filter-section {
@@ -155,11 +209,12 @@
 
         .filter-title {
             font-size: 16px;
-            font-weight: bold;
-            color: #1a3d7c;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
             margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e0e7ff;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .map-controls {
@@ -170,47 +225,56 @@
         }
 
         .map-toggle {
-            background: #f8faff;
-            border: 2px solid #d0e0ff;
-            padding: 8px 16px;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            padding: 10px 18px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.95);
         }
 
         .map-toggle.active {
-            background: #1a3d7c;
+            background: rgba(255, 255, 255, 0.4);
             color: white;
-            border-color: #1a3d7c;
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .map-toggle:hover {
-            background: #e0e7ff;
-            border-color: #b0c7ff;
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
         }
 
         .map-toggle.active:hover {
-            background: #2c5aa0;
+            background: rgba(255, 255, 255, 0.45);
         }
 
         .chart-title {
             font-size: 18px;
-            font-weight: bold;
-            color: #1a3d7c;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
             margin-bottom: 15px;
             text-align: center;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e7ff;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .stats-summary {
-            background: linear-gradient(135deg, #f0f8ff, #e6f3ff);
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 16px;
             padding: 20px;
             margin-bottom: 25px;
-            border: 1px solid #d0e7ff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
 
         .stats-grid {
@@ -222,21 +286,32 @@
         .stat-item {
             text-align: center;
             padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         .stat-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1a3d7c;
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.98);
             margin-bottom: 5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
         }
 
         .stat-label {
             font-size: 12px;
-            color: #666;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
         }
     </style>
 </head>
@@ -287,7 +362,7 @@
 
             <div class="filter-section">
                 <div class="filter-title">📊 Analysis Insights</div>
-                <div id="insights" style="font-size: 14px; line-height: 1.5; color: #555;">
+                <div id="insights" style="font-size: 14px; line-height: 1.6; color: rgba(255, 255, 255, 0.9); background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3);">
                     Loading insights...
                 </div>
             </div>
@@ -307,13 +382,13 @@
                         🔄 Dual Layer View
                     </button>
                 </div>
-                <div id="deliverySlider" style="display: block; margin: 15px 0; padding: 15px; background: #f8faff; border-radius: 8px;">
-                    <div style="font-weight: bold; margin-bottom: 10px; color: #1a3d7c;">📦 Delivery Time Filter</div>
+                <div id="deliverySlider" style="display: block; margin: 15px 0; padding: 18px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3);">
+                    <div style="font-weight: 700; margin-bottom: 10px; color: rgba(255, 255, 255, 0.95); text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);">📦 Delivery Time Filter</div>
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-size: 14px;">Max Days:</span>
+                        <span style="font-size: 14px; color: rgba(255, 255, 255, 0.9);">Max Days:</span>
                         <input type="range" id="maxDeliveryDays" min="1" max="50" value="50" 
                                style="flex: 1;" oninput="updateDeliveryFilter(this.value)">
-                        <span id="maxDaysValue" style="font-weight: bold; color: #1a3d7c; min-width: 60px;">50 days</span>
+                        <span id="maxDaysValue" style="font-weight: 700; color: rgba(255, 255, 255, 0.95); min-width: 60px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);">50 days</span>
                     </div>
                 </div>
                 <div id="map"></div>
