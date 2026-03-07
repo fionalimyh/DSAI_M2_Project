@@ -355,7 +355,7 @@
                     <div id="correlationChart"></div>
                 </div>
                 <div class="chart-panel">
-                    <div class="chart-title">🎯 Performance Matrix</div>
+                    <div class="chart-title">🎯 Regional Performance Score</div>
                     <div id="matrixChart"></div>
                 </div>
             </div>
@@ -749,48 +749,77 @@
         }
 
         function createMatrixChart() {
-            const matrix = [
-                ['Fast Delivery<br>High Revenue', 'Fast Delivery<br>Low Revenue'],
-                ['Slow Delivery<br>High Revenue', 'Slow Delivery<br>Low Revenue']
-            ];
-
-            const counts = [
-                [
-                    filteredData.filter(d => d.avg_delivery_days <= 15 && (d.total_revenue || 0) > 5000).length,
-                    filteredData.filter(d => d.avg_delivery_days <= 15 && (d.total_revenue || 0) <= 5000).length
-                ],
-                [
-                    filteredData.filter(d => d.avg_delivery_days > 15 && (d.total_revenue || 0) > 5000).length,
-                    filteredData.filter(d => d.avg_delivery_days > 15 && (d.total_revenue || 0) <= 5000).length
-                ]
-            ];
-
-            const trace = {
-                z: counts,
-                type: 'heatmap',
-                colorscale: 'Blues',
-                showscale: false,
-                text: counts.map(row => row.map(val => val.toString())),
-                texttemplate: '%{text}',
-                textfont: { size: 16, color: 'white' },
-                hovertemplate: '%{z} regions<extra></extra>'
+            // Calculate performance score for each region (0-100)
+            // Score = (Revenue Weight * 0.6) + (Delivery Speed Weight * 0.4)
+            const maxRevenue = Math.max(...filteredData.map(d => d.total_revenue || 0));
+            const maxDelivery = Math.max(...filteredData.map(d => d.avg_delivery_days));
+            
+            const performanceData = filteredData.map(d => {
+                const revenueScore = ((d.total_revenue || 0) / maxRevenue) * 100;
+                const deliveryScore = (1 - (d.avg_delivery_days / maxDelivery)) * 100;
+                const totalScore = (revenueScore * 0.6) + (deliveryScore * 0.4);
+                return {
+                    city: d.city,
+                    state: d.state,
+                    score: totalScore,
+                    revenue: d.total_revenue || 0,
+                    delivery: d.avg_delivery_days
+                };
+            });
+            
+            // Sort by score and take top 10 and bottom 10
+            performanceData.sort((a, b) => b.score - a.score);
+            const topRegions = performanceData.slice(0, 10);
+            const bottomRegions = performanceData.slice(-10).reverse();
+            
+            const trace1 = {
+                x: topRegions.map(d => d.score),
+                y: topRegions.map(d => `${d.city}, ${d.state}`),
+                type: 'bar',
+                orientation: 'h',
+                name: 'Top Performers',
+                marker: {
+                    color: topRegions.map(d => d.score),
+                    colorscale: [[0, '#4ade80'], [1, '#16a34a']],
+                    showscale: false
+                },
+                text: topRegions.map(d => d.score.toFixed(0)),
+                textposition: 'outside',
+                hovertemplate: '<b>%{y}</b><br>Score: %{x:.1f}<extra></extra>'
+            };
+            
+            const trace2 = {
+                x: bottomRegions.map(d => d.score),
+                y: bottomRegions.map(d => `${d.city}, ${d.state}`),
+                type: 'bar',
+                orientation: 'h',
+                name: 'Needs Attention',
+                marker: {
+                    color: bottomRegions.map(d => d.score),
+                    colorscale: [[0, '#ef4444'], [1, '#fca5a5']],
+                    showscale: false
+                },
+                text: bottomRegions.map(d => d.score.toFixed(0)),
+                textposition: 'outside',
+                hovertemplate: '<b>%{y}</b><br>Score: %{x:.1f}<extra></extra>'
             };
 
             const layout = {
                 xaxis: { 
-                    tickvals: [0, 1], 
-                    ticktext: ['High Revenue', 'Low Revenue'],
-                    side: 'top'
+                    title: 'Performance Score (0-100)',
+                    range: [0, 100]
                 },
                 yaxis: { 
-                    tickvals: [0, 1], 
-                    ticktext: ['Fast Delivery', 'Slow Delivery']
+                    title: '',
+                    automargin: true
                 },
                 height: 280,
-                margin: { t: 60, b: 20, l: 100, r: 20 }
+                margin: { t: 10, b: 50, l: 120, r: 30 },
+                showlegend: false,
+                bargap: 0.3
             };
 
-            Plotly.newPlot('matrixChart', [trace], layout, { responsive: true });
+            Plotly.newPlot('matrixChart', [trace1, trace2], layout, { responsive: true });
         }
     </script>
 </body>
