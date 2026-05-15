@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/fengfeng/Dev/DSAI_M2_Project -not -path '*/\\\\.git/*' -type f -exec ls -lh {} \\\\;)"
+    ]
+  }
+}
