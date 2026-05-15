@@ -7,7 +7,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Brazil Delivery Time & Revenue Analysis Dashboard</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="plotly.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * {
             margin: 0;
@@ -268,6 +270,98 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
+        .stat-desc {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 4px;
+            line-height: 1.3;
+        }
+
+        .chart-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: -10px;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .view-desc {
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 10px;
+            min-height: 18px;
+            transition: opacity 0.2s;
+        }
+
+        .filter-desc {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .range-slider-track {
+            position: relative;
+            height: 24px;
+            margin: 4px 0;
+        }
+
+        .range-slider-track .track-bg {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+        }
+
+        .range-slider-track .track-fill {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 4px;
+            background: #3b82f6;
+            border-radius: 2px;
+        }
+
+        .range-slider-track input[type=range] {
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            margin: 0;
+        }
+
+        .range-slider-track input[type=range]::-webkit-slider-thumb {
+            pointer-events: all;
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #1e40af;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+
+        .range-slider-track input[type=range]::-moz-range-thumb {
+            pointer-events: all;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #1e40af;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -283,24 +377,29 @@
                     <div class="stat-item">
                         <div class="stat-value" id="totalRegions">-</div>
                         <div class="stat-label">Regions</div>
+                        <div class="stat-desc">Zip code groups matching current filters</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="avgDays">-</div>
                         <div class="stat-label">Avg Delivery Days</div>
+                        <div class="stat-desc">Mean days from order to delivery across filtered regions</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="totalRevenue">-</div>
                         <div class="stat-label">Total Revenue</div>
+                        <div class="stat-desc">Sum of all order payments in filtered regions</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="avgRevenue">-</div>
                         <div class="stat-label">Avg Revenue/Region</div>
+                        <div class="stat-desc">Total revenue divided by number of regions</div>
                     </div>
                 </div>
             </div>
 
             <div class="filter-section">
                 <div class="filter-title">Select States</div>
+                <div class="filter-desc">Filter the map and charts to show only the selected Brazilian states. Changing states also updates the city list below.</div>
                 <button class="select-all-btn" onclick="toggleAllStates()">Select All / Deselect All</button>
                 <div class="checkbox-group" id="stateFilters">
                     Loading...
@@ -309,6 +408,9 @@
 
             <div class="filter-section">
                 <div class="filter-title">Select Cities</div>
+                <div class="filter-desc">Narrow down to specific cities within the selected states.</div>
+                <input type="text" id="citySearch" placeholder="Search cities..." oninput="filterCityList(this.value)"
+                    style="width:100%; padding:7px 10px; font-size:12px; border:1px solid #d1d5db; border-radius:4px; margin-bottom:8px; box-sizing:border-box; color:#374151;">
                 <button class="select-all-btn" onclick="toggleAllCities()">Select All / Deselect All</button>
                 <div class="checkbox-group" id="cityFilters">
                     Loading...
@@ -337,26 +439,49 @@
                         🔄 Dual Layer View
                     </button>
                 </div>
-                <div id="deliverySlider" style="display: block; margin: 15px 0; padding: 16px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb;">
-                    <div style="font-weight: 600; margin-bottom: 10px; color: #374151; font-size: 13px;">📦 DELIVERY TIME FILTER</div>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="font-size: 12px; color: #6b7280;">Max Days:</span>
-                        <input type="range" id="maxDeliveryDays" min="1" max="50" value="50" 
-                               style="flex: 1;" oninput="updateDeliveryFilter(this.value)">
-                        <span id="maxDaysValue" style="font-weight: 600; color: #1e40af; min-width: 60px; font-size: 13px;">50 days</span>
+                <div class="view-desc" id="viewDesc">Each circle = one zip code region. Color shows delivery speed: green (fast) → yellow → orange → red (slow). Circle size reflects the number of days.</div>
+                <div style="position: relative;">
+                    <div id="map" style="width: 100%; height: 500px; border-radius: 8px; overflow: hidden;"></div>
+                    <div id="aggregationLevel" style="position:absolute; bottom:10px; left:10px; z-index:1000; background:white; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600; color:#374151; box-shadow:0 2px 6px rgba(0,0,0,0.2);">State level</div>
+                    <select id="tileStyleSelect" onchange="switchTileStyle(this.value)"
+                        style="position:absolute; top:10px; right:10px; z-index:1000; font-size:12px; padding:6px 10px; border-radius:4px; border:1px solid #d1d5db; color:#374151; background:white; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+                        <option value="voyager">CartoDB Voyager (default)</option>
+                        <option value="light">CartoDB Light</option>
+                        <option value="dark">CartoDB Dark</option>
+                        <option value="light_nolabels">CartoDB Light (no labels)</option>
+                        <option value="esri_gray">Esri World Gray Canvas</option>
+                        <option value="stadia_smooth">Stadia Alidade Smooth</option>
+                        <option value="osm">OpenStreetMap</option>
+                    </select>
+                </div>
+                <div id="deliverySlider" style="display: block; margin: 15px 0 0; padding: 16px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <div style="font-weight: 600; color: #374151; font-size: 13px;">📦 DELIVERY TIME FILTER</div>
+                        <div id="deliveryRangeLabel" style="font-weight:600; color:#1e40af; font-size:13px;">1 – 50 days</div>
+                    </div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 10px;">Show only regions where average delivery falls within this range.</div>
+                    <div class="range-slider-track">
+                        <div class="track-bg"></div>
+                        <div class="track-fill" id="rangeTrackFill"></div>
+                        <input type="range" id="minDeliveryDays" min="1" max="50" value="1"  oninput="updateDeliveryRange()">
+                        <input type="range" id="maxDeliveryDays" min="1" max="50" value="50" oninput="updateDeliveryRange()">
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:10px; color:#9ca3af; padding:0 2px; margin-top:2px;">
+                        <span>1</span><span>5</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30</span><span>35</span><span>40</span><span>45</span><span>50</span>
                     </div>
                 </div>
-                <div id="map"></div>
             </div>
 
             <div class="charts-container">
                 <div class="chart-panel">
                     <div class="chart-title">📈 Delivery vs Revenue Correlation</div>
-                    <div id="correlationChart"></div>
+                    <div class="chart-subtitle">Each dot is one zip code region. The dashed line is the linear trend — its slope shows how much revenue changes per extra delivery day. R² measures how strongly delivery time alone explains revenue differences (0 = no relationship, 1 = perfect).</div>
+                    <div id="correlationChart" style="width: 100%; height: 280px;"></div>
                 </div>
                 <div class="chart-panel">
                     <div class="chart-title">🎯 Regional Performance Score</div>
-                    <div id="matrixChart"></div>
+                    <div class="chart-subtitle">Composite score (0–100) = 60% revenue + 40% delivery speed, both normalized to the current filtered data. Shows the top 10 and bottom 10 regions. Scores are relative — they shift when filters change.</div>
+                    <div id="matrixChart" style="width: 100%; height: 280px;"></div>
                 </div>
             </div>
         </div>
@@ -370,28 +495,35 @@
         let selectedStates = new Set();
         let selectedCities = new Set();
         let currentMapView = 'delivery';
-        let mapState = { center: { lat: -14.2350, lon: -51.9253 }, zoom: 3.5 };
+        let minDeliveryDays = 1;
         let maxDeliveryDays = 50;
 
         document.addEventListener('DOMContentLoaded', function() {
+
+            // Then load data
             loadData();
         });
 
         async function loadData() {
             try {
+                console.log('Loading data from dashboard_data.json...');
                 const response = await fetch('dashboard_data.json');
                 if (response.ok) {
                     const data = await response.json();
                     rawData = data.data;
                     console.log('✅ Data loaded:', rawData.length, 'records');
+                    console.log('Sample record:', rawData[0]);
                     initializeFilters();
                     updateDashboard();
                 } else {
+                    console.warn('Failed to load data, using sample data');
                     throw new Error('Failed to load data');
                 }
             } catch (error) {
-                console.error('❌ Error:', error);
+                console.error('❌ Error loading data:', error);
+                console.log('Using sample data instead');
                 rawData = generateSampleData();
+                console.log('Sample data generated:', rawData.length, 'records');
                 initializeFilters();
                 updateDashboard();
             }
@@ -515,7 +647,8 @@
             const availableCities = [...new Set(rawData
                 .filter(d => selectedStates.has(d.state))
                 .map(d => d.city))].sort();
-            
+
+            document.getElementById('citySearch').value = '';
             const cityContainer = document.getElementById('cityFilters');
             cityContainer.innerHTML = '';
             
@@ -532,6 +665,14 @@
             });
         }
 
+        function filterCityList(query) {
+            const q = query.toLowerCase();
+            document.querySelectorAll('#cityFilters .checkbox-item').forEach(item => {
+                const label = item.querySelector('label').textContent.toLowerCase();
+                item.style.display = label.includes(q) ? '' : 'none';
+            });
+        }
+
         function toggleCity(city) {
             if (selectedCities.has(city)) {
                 selectedCities.delete(city);
@@ -542,9 +683,10 @@
         }
 
         function filterData() {
-            filteredData = rawData.filter(d => 
-                selectedStates.has(d.state) && 
+            filteredData = rawData.filter(d =>
+                selectedStates.has(d.state) &&
                 selectedCities.has(d.city) &&
+                d.avg_delivery_days >= minDeliveryDays &&
                 d.avg_delivery_days <= maxDeliveryDays
             );
         }
@@ -587,150 +729,277 @@
             `;
         }
 
+        const VIEW_DESCRIPTIONS = {
+            delivery: "Each circle = one zip code region. Color shows delivery speed: green (≤7 days) → yellow → orange → red (>21 days). Circle size reflects the number of days.",
+            revenue:  "Each circle = one zip code region. Color and size show total revenue: light blue (low) → dark blue (high). Larger, darker circles indicate higher-revenue areas.",
+            dual:     "Each location shows two rings: the outer colored ring shows delivery speed (green = fast → red = slow), the inner solid blue circle shows revenue (size + color). Hover either ring for details."
+        };
+
         function switchMapView(view) {
             currentMapView = view;
-            
+
             // Update button states
             document.querySelectorAll('.map-toggle').forEach(btn => btn.classList.remove('active'));
             document.getElementById(view + 'Btn').classList.add('active');
-            
+
+            // Update view description
+            document.getElementById('viewDesc').textContent = VIEW_DESCRIPTIONS[view];
+
             // Show/hide delivery slider
             const slider = document.getElementById('deliverySlider');
             slider.style.display = (view === 'delivery' || view === 'dual') ? 'block' : 'none';
-            
+
             createMap();
         }
 
-        function updateDeliveryFilter(value) {
-            maxDeliveryDays = parseInt(value);
-            document.getElementById('maxDaysValue').textContent = value + ' days';
+        function updateDeliveryRange() {
+            const minEl = document.getElementById('minDeliveryDays');
+            const maxEl = document.getElementById('maxDeliveryDays');
+            let minVal = parseInt(minEl.value);
+            let maxVal = parseInt(maxEl.value);
+
+            // Clamp so handles don't cross
+            if (minVal > maxVal) {
+                if (event.target.id === 'minDeliveryDays') { minVal = maxVal; minEl.value = minVal; }
+                else                                        { maxVal = minVal; maxEl.value = maxVal; }
+            }
+
+            // Raise z-index of the closer handle so it stays grabbable
+            minEl.style.zIndex = minVal > 45 ? 5 : 3;
+            maxEl.style.zIndex = minVal > 45 ? 3 : 5;
+
+            // Update the blue fill between handles
+            const pct = v => (v - 1) / (50 - 1) * 100;
+            const fill = document.getElementById('rangeTrackFill');
+            fill.style.left  = pct(minVal) + '%';
+            fill.style.width = (pct(maxVal) - pct(minVal)) + '%';
+
+            minDeliveryDays = minVal;
+            maxDeliveryDays = maxVal;
+            document.getElementById('deliveryRangeLabel').textContent = `${minVal} – ${maxVal} days`;
             updateDashboard();
         }
 
-        function createMap() {
-            const traces = [];
+        // Init track fill on load
+        document.addEventListener('DOMContentLoaded', () => updateDeliveryRange());
 
-            if (filteredData.length === 0) {
-                Plotly.newPlot('map', [], {
-                    title: 'No data to display',
-                    height: 500
-                });
-                return;
+        let leafletMap = null;
+        let leafletLayers = { delivery: null, revenue: null };
+        let legendControl = null;
+        let tileLayer = null;
+        let currentTileStyle = 'voyager';
+
+        const TILE_STYLES = {
+            voyager:       { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',           attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap' },
+            light:         { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',                     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap' },
+            dark:          { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',                      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap' },
+            light_nolabels:{ url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',                attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap' },
+            esri_gray:     { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', attribution: '&copy; <a href="https://www.esri.com/">Esri</a>' },
+            stadia_smooth: { url: 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',               attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>' },
+            osm:           { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',                                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }
+        };
+
+        function switchTileStyle(style) {
+            currentTileStyle = style;
+            if (tileLayer && leafletMap) {
+                leafletMap.removeLayer(tileLayer);
             }
+            const t = TILE_STYLES[style];
+            tileLayer = L.tileLayer(t.url, { attribution: t.attribution, subdomains: 'abcd', maxZoom: 19 });
+            tileLayer.addTo(leafletMap);
+            tileLayer.bringToBack();
+        }
+
+        function getDeliveryColor(days) {
+            if (days <= 7)  return '#27AE60';  // emerald green
+            if (days <= 14) return '#F4D03F';  // sunflower yellow
+            if (days <= 21) return '#E67E22';  // carrot orange
+            return '#C0392B';                   // alizarin red
+        }
+
+        function getRevenueColor(revenue, maxRevenue) {
+            const t = Math.min(revenue / maxRevenue, 1);
+            if (t < 0.25) return '#64B5F6';  // light blue  - Low
+            if (t < 0.60) return '#1976D2';  // medium blue - Medium
+            return '#0D47A1';                 // dark blue   - High
+        }
+
+        function getZoomLevel() {
+            const zoom = leafletMap ? leafletMap.getZoom() : 4;
+            if (zoom < 7)  return 'state';
+            if (zoom < 11) return 'city';
+            return 'zip';
+        }
+
+        function getAggregatedData() {
+            const level = getZoomLevel();
+            if (level === 'zip') return filteredData;
+
+            const groups = {};
+            filteredData.forEach(d => {
+                const key = level === 'state' ? d.state : `${d.city}||${d.state}`;
+                if (!groups[key]) {
+                    groups[key] = {
+                        state: d.state,
+                        city: level === 'state' ? d.state : d.city,
+                        latSum: 0, lonSum: 0, count: 0,
+                        deliverySum: 0, revenueSum: 0, orderSum: 0
+                    };
+                }
+                const g = groups[key];
+                g.latSum      += d.avg_latitude;
+                g.lonSum      += d.avg_longitude;
+                g.deliverySum += d.avg_delivery_days;
+                g.revenueSum  += (d.total_revenue || 0);
+                g.orderSum    += (d.order_count   || 0);
+                g.count++;
+            });
+
+            return Object.values(groups).map(g => ({
+                avg_latitude:    g.latSum / g.count,
+                avg_longitude:   g.lonSum / g.count,
+                city:            g.city,
+                state:           g.state,
+                avg_delivery_days: g.deliverySum / g.count,
+                total_revenue:   g.revenueSum,
+                order_count:     g.orderSum
+            }));
+        }
+
+        function createMap() {
+            if (!leafletMap) {
+                leafletMap = L.map('map', { zoomControl: true }).setView([-14.235, -51.925], 4);
+                const t = TILE_STYLES[currentTileStyle];
+                tileLayer = L.tileLayer(t.url, { attribution: t.attribution, subdomains: 'abcd', maxZoom: 19 });
+                tileLayer.addTo(leafletMap);
+                leafletMap.on('zoomend', updateMapLayers);
+            }
+            updateMapLayers();
+        }
+
+        function updateMapLayers() {
+            // Remove old layers
+            if (leafletLayers.delivery) { leafletMap.removeLayer(leafletLayers.delivery); leafletLayers.delivery = null; }
+            if (leafletLayers.revenue)  { leafletMap.removeLayer(leafletLayers.revenue);  leafletLayers.revenue = null; }
+            if (legendControl) { leafletMap.removeControl(legendControl); legendControl = null; }
+
+            if (filteredData.length === 0) return;
+
+            const level   = getZoomLevel();
+            const mapData = getAggregatedData();
+            const maxRevenue = Math.max(...mapData.map(d => d.total_revenue || 0));
+
+            // Circle size scale: larger at coarser levels
+            const sizeScale = { state: 2.0, city: 1.4, zip: 1.0 }[level];
+
+            // Update aggregation badge
+            const labels = { state: 'State level', city: 'City level', zip: 'Zip code level' };
+            document.getElementById('aggregationLevel').textContent = labels[level];
 
             if (currentMapView === 'delivery' || currentMapView === 'dual') {
-                traces.push({
-                    type: 'scattermapbox',
-                    lat: filteredData.map(d => d.avg_latitude),
-                    lon: filteredData.map(d => d.avg_longitude),
-                    mode: 'markers',
-                    name: 'Delivery Time',
-                    marker: {
-                        size: filteredData.map(d => Math.max(8, Math.min(25, d.avg_delivery_days * 1.2))),
-                        color: filteredData.map(d => d.avg_delivery_days),
-                        colorscale: [
-                            [0, '#4CAF50'],
-                            [0.25, '#FFC107'],
-                            [0.5, '#FF9800'],
-                            [0.75, '#FF5722'],
-                            [1, '#D32F2F']
-                        ],
-                        showscale: true,
-                        colorbar: {
-                            title: 'Delivery Days',
-                            titleside: 'right',
-                            thickness: 15,
-                            len: 0.7,
-                            x: currentMapView === 'dual' ? 1.02 : 1.02
-                        },
-                        opacity: currentMapView === 'dual' ? 0.7 : 0.8,
-                        line: { width: 1, color: 'white' }
-                    },
-                    text: filteredData.map(d => 
-                        `<b>${d.city}, ${d.state}</b><br>` +
-                        `Delivery: ${d.avg_delivery_days.toFixed(1)} days<br>` +
-                        `Revenue: R$ ${(d.total_revenue || 0).toLocaleString()}<br>` +
-                        `Orders: ${d.order_count}`
-                    ),
-                    hovertemplate: '%{text}<extra></extra>'
+                const isDual = currentMapView === 'dual';
+                const markers = mapData.map(d => {
+                    const r = Math.max(3, Math.min(12, d.avg_delivery_days * 0.35)) * sizeScale;
+                    return L.circleMarker([d.avg_latitude, d.avg_longitude], {
+                        radius:      isDual ? r + 4 : r,
+                        fillColor:   getDeliveryColor(d.avg_delivery_days),
+                        color:       getDeliveryColor(d.avg_delivery_days),
+                        weight:      isDual ? 3 : 1,
+                        opacity:     1,
+                        fillOpacity: isDual ? 0 : 0.9
+                    }).bindPopup(
+                        `<b>${d.city.charAt(0).toUpperCase() + d.city.slice(1)}, ${d.state}</b>` +
+                        `<br><i style="color:#9ca3af;font-size:11px">${labels[level]}</i>` +
+                        `<br>Avg Delivery: <b>${d.avg_delivery_days.toFixed(1)} days</b>` +
+                        `<br>Total Revenue: R$ ${(d.total_revenue || 0).toLocaleString()}` +
+                        `<br>Total Orders: ${d.order_count.toLocaleString()}`
+                    );
                 });
+                leafletLayers.delivery = L.layerGroup(markers).addTo(leafletMap);
             }
 
             if (currentMapView === 'revenue' || currentMapView === 'dual') {
-                // Filter out zero revenue for better visualization
-                const revenueData = filteredData.filter(d => (d.total_revenue || 0) > 0);
-                
-                traces.push({
-                    type: 'scattermapbox',
-                    lat: revenueData.map(d => d.avg_latitude + (currentMapView === 'dual' ? 0.02 : 0)),
-                    lon: revenueData.map(d => d.avg_longitude + (currentMapView === 'dual' ? 0.02 : 0)),
-                    mode: 'markers',
-                    name: 'Revenue',
-                    marker: {
-                        size: revenueData.map(d => Math.max(10, Math.min(40, 10 + (d.total_revenue || 0) / 800))),
-                        color: revenueData.map(d => d.total_revenue || 0),
-                        colorscale: [
-                            [0, '#F3E5F5'],
-                            [0.25, '#CE93D8'],
-                            [0.5, '#AB47BC'],
-                            [0.75, '#8E24AA'],
-                            [1, '#6A1B9A']
-                        ],
-                        showscale: true,
-                        colorbar: {
-                            title: 'Revenue (R$)',
-                            titleside: 'right',
-                            thickness: 15,
-                            len: 0.7,
-                            x: currentMapView === 'dual' ? 1.15 : 1.02
-                        },
-                        opacity: 0.9,
-                        line: { width: 4, color: '#FFFFFF' }
-                    },
-                    text: revenueData.map(d => 
-                        `<b>${d.city}, ${d.state}</b><br>` +
-                        `Revenue: R$ ${(d.total_revenue || 0).toLocaleString()}<br>` +
-                        `Delivery: ${d.avg_delivery_days.toFixed(1)} days<br>` +
-                        `Orders: ${d.order_count}`
-                    ),
-                    hovertemplate: '%{text}<extra></extra>'
+                const markers = mapData.filter(d => (d.total_revenue || 0) > 0).map(d => {
+                    const r = (Math.max(4, Math.min(18, 4 + (d.total_revenue / maxRevenue) * 14))) * sizeScale;
+                    return L.circleMarker([d.avg_latitude, d.avg_longitude], {
+                        radius:      r,
+                        fillColor:   getRevenueColor(d.total_revenue, maxRevenue),
+                        color:       'white',
+                        weight:      1.5,
+                        opacity:     1,
+                        fillOpacity: 0.85
+                    }).bindPopup(
+                        `<b>${d.city.charAt(0).toUpperCase() + d.city.slice(1)}, ${d.state}</b>` +
+                        `<br><i style="color:#9ca3af;font-size:11px">${labels[level]}</i>` +
+                        `<br>Total Revenue: <b>R$ ${(d.total_revenue || 0).toLocaleString()}</b>` +
+                        `<br>Avg Delivery: ${d.avg_delivery_days.toFixed(1)} days` +
+                        `<br>Total Orders: ${d.order_count.toLocaleString()}`
+                    );
                 });
+                leafletLayers.revenue = L.layerGroup(markers).addTo(leafletMap);
             }
 
-            const layout = {
-                mapbox: {
-                    style: 'open-street-map',
-                    center: mapState.center,
-                    zoom: mapState.zoom
-                },
-                margin: { t: 0, b: 0, l: 0, r: 0 },
-                height: 500,
-                showlegend: currentMapView === 'dual'
+            // Legend
+            legendControl = L.control({ position: 'bottomright' });
+            legendControl.onAdd = function() {
+                const div = L.DomUtil.create('div', '');
+                div.style.cssText = 'background:white;padding:10px 14px;border-radius:8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2);line-height:1.8';
+                if (currentMapView === 'delivery' || currentMapView === 'dual') {
+                    div.innerHTML += '<b>Delivery Days</b><br>' +
+                        '<span style="color:#27AE60">●</span> ≤7 Fast<br>' +
+                        '<span style="color:#F4D03F">●</span> 8–14 Medium<br>' +
+                        '<span style="color:#E67E22">●</span> 15–21 Slow<br>' +
+                        '<span style="color:#C0392B">●</span> >21 Very Slow<br>';
+                }
+                if (currentMapView === 'revenue' || currentMapView === 'dual') {
+                    if (currentMapView === 'dual') div.innerHTML += '<hr style="margin:6px 0">';
+                    div.innerHTML += '<b>Revenue (R$)</b><br>' +
+                        '<span style="color:#64B5F6">●</span> Low (&lt;25%)<br>' +
+                        '<span style="color:#1976D2">●</span> Medium (25–60%)<br>' +
+                        '<span style="color:#0D47A1">●</span> High (&gt;60%)';
+                }
+                return div;
             };
-
-            Plotly.react('map', traces, layout, { responsive: true });
-            
-            // Add event listener to track map changes
-            document.getElementById('map').on('plotly_relayout', function(eventdata) {
-                if (eventdata['mapbox.center']) {
-                    mapState.center = eventdata['mapbox.center'];
-                }
-                if (eventdata['mapbox.zoom']) {
-                    mapState.zoom = eventdata['mapbox.zoom'];
-                }
-            });
+            legendControl.addTo(leafletMap);
         }
 
         function createCorrelationChart() {
-            const trace = {
-                x: filteredData.map(d => d.avg_delivery_days),
-                y: filteredData.map(d => d.total_revenue || 0),
+            const xs = filteredData.map(d => d.avg_delivery_days);
+            const ys = filteredData.map(d => d.total_revenue || 0);
+
+            // Linear regression
+            const n = xs.length;
+            const sumX  = xs.reduce((a, b) => a + b, 0);
+            const sumY  = ys.reduce((a, b) => a + b, 0);
+            const sumXY = xs.reduce((s, x, i) => s + x * ys[i], 0);
+            const sumX2 = xs.reduce((s, x) => s + x * x, 0);
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            const xMin = Math.min(...xs);
+            const xMax = Math.max(...xs);
+            const trendX = [xMin, xMax];
+            const trendY = trendX.map(x => slope * x + intercept);
+
+            // R² for annotation
+            const yMean = sumY / n;
+            const ssTot = ys.reduce((s, y) => s + (y - yMean) ** 2, 0);
+            const ssRes = xs.reduce((s, x, i) => s + (ys[i] - (slope * x + intercept)) ** 2, 0);
+            const r2 = 1 - ssRes / ssTot;
+
+            const scatterTrace = {
+                x: xs,
+                y: ys,
                 mode: 'markers',
                 type: 'scatter',
+                name: 'Regions',
                 marker: {
                     size: 8,
-                    color: filteredData.map(d => d.avg_delivery_days),
-                    colorscale: 'Viridis',
+                    color: xs,
+                    colorscale: [
+                        [0, '#27AE60'], [0.33, '#F4D03F'],
+                        [0.66, '#E67E22'], [1, '#C0392B']
+                    ],
                     showscale: false,
                     opacity: 0.7
                 },
@@ -738,14 +1007,34 @@
                 hovertemplate: '%{text}<br>Delivery: %{x:.1f} days<br>Revenue: R$ %{y:,.0f}<extra></extra>'
             };
 
+            const trendTrace = {
+                x: trendX,
+                y: trendY,
+                mode: 'lines',
+                type: 'scatter',
+                name: `Trend (R²=${r2.toFixed(2)})`,
+                line: { color: '#E74C3C', width: 2, dash: 'dash' },
+                hoverinfo: 'skip'
+            };
+
             const layout = {
                 xaxis: { title: 'Delivery Days' },
                 yaxis: { title: 'Revenue (R$)' },
                 height: 280,
-                margin: { t: 20, b: 60, l: 80, r: 20 }
+                margin: { t: 20, b: 60, l: 80, r: 20 },
+                legend: { x: 0.98, y: 0.98, xanchor: 'right', font: { size: 11 } },
+                annotations: [{
+                    x: xMax,
+                    y: trendY[1],
+                    text: `slope: ${slope >= 0 ? '+' : ''}${slope.toFixed(0)} R$/day`,
+                    showarrow: false,
+                    font: { size: 10, color: '#E74C3C' },
+                    xanchor: 'right',
+                    yanchor: 'bottom'
+                }]
             };
 
-            Plotly.newPlot('correlationChart', [trace], layout, { responsive: true });
+            Plotly.newPlot('correlationChart', [scatterTrace, trendTrace], layout, { responsive: true });
         }
 
         function createMatrixChart() {
