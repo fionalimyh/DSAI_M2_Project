@@ -78,6 +78,7 @@ venv.bak/
 # OS
 .DS_Store
 Thumbs.db
+**/.DS_Store
 
 # Data files (optional - uncomment if needed)
 # *.csv
