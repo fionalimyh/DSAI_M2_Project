@@ -2,248 +2,133 @@
 
 ![Dashboard](/Document/dashboard.png)
 
-## 📋 Overview
+## Overview
 
-This is an advanced dual-layer web dashboard that provides comprehensive analysis of both delivery performance and revenue data across Brazilian regions. The dashboard combines delivery time analytics with revenue insights to enable strategic business decision-making.
+An interactive dual-layer web dashboard for analysing delivery performance and revenue across Brazilian regions. Built on the Olist e-commerce dataset with a dbt + BigQuery data pipeline feeding a Leaflet/Plotly.js frontend.
 
-## 🎯 Key Features
+## Quick Start
 
-### 1. Dual-Layer Map Visualization
-- **🚚 Delivery Time View**: Color-coded circles showing delivery performance
-- **💰 Revenue View**: Purple circles with white borders sized by revenue amount
-- **🔄 Dual Layer View**: Both metrics simultaneously with distinct visual markers
-- **📍 Interactive Map**: Zoom, pan, and hover for detailed region information
-
-### 2. Advanced Filtering System
-- **🏛️ State Selector**: Multi-select with dynamic city filtering
-- **🏙️ City Selector**: Shows only cities from selected states
-- **📦 Delivery Time Slider**: Filter regions by maximum delivery days (1-50 days)
-- **🎯 Smart Filters**: All visualizations update in real-time
-
-### 3. Comprehensive Analytics
-- **📊 Correlation Analysis**: Scatter plot showing delivery time vs revenue relationship
-- **🎯 Performance Matrix**: 2x2 grid identifying business opportunities
-- **📈 Distribution Charts**: Histograms and category breakdowns
-- **💡 Automated Insights**: Key findings and recommendations
-
-## 🚀 Quick Start
-
-### Method 1: Dual-Layer Dashboard (Recommended)
 ```bash
 cd /Users/fengfeng/Dev/DSAI_M2_Project/olist/notebook
 python3 run_delivery_revenue_dashboard.py
 ```
 
-### Method 2: Alternative Servers Delivery Time Only
-```bash
-# City-enabled dashboard
-python3 run_dashboard_with_cities.py
+Opens at **http://localhost:8004/brazil_delivery_revenue_dashboard.html**. Press `Ctrl+C` to stop.
 
-# Basic delivery dashboard  
-python3 run_dashboard.py
-```
+## Features
 
-## 📊 Dashboard Components
+### Map
 
-### Left Control Panel
-
-#### 1. Statistics Summary
-- **Total Regions**: Filtered region count
-- **Average Delivery Days**: Performance metric
-- **Total Revenue**: Combined revenue across regions
-- **Average Revenue/Region**: Revenue distribution metric
-
-#### 2. State & City Filters
-- **State Selector**: 27 Brazilian states with select all/deselect all
-- **Dynamic City Filter**: Shows only cities from selected states (1,647+ cities)
-- **Auto-Update**: City list refreshes when states change
-
-#### 3. Delivery Time Controls
-- **Time Slider**: Filter by maximum delivery days (1-50 range)
-- **Smart Display**: Only visible in delivery and dual views
-- **Real-time Updates**: Instant filtering across all visualizations
-
-#### 4. Analysis Insights
-- **Automated Analysis**: Key performance insights
-- **Revenue Distribution**: Fast vs slow delivery revenue breakdown
-- **Business Opportunities**: Identification of improvement areas
-
-### Right Visualization Area
-
-#### 1. Interactive Map 🗺️
-- **Three View Modes**:
-  - **Delivery View**: Circles colored by delivery speed (green=fast, red=slow)
-  - **Revenue View**: Purple circles sized by revenue amount
-  - **Dual View**: Both layers with distinct markers and dual color bars
-- **Map State Persistence**: Zoom and position maintained when switching views
-- **Rich Tooltips**: Detailed information on hover
-
-#### 2. Correlation Analysis 📈
-- **Scatter Plot**: Delivery days vs revenue relationship
-- **Color Coding**: Points colored by delivery performance
-- **Trend Analysis**: Identify correlation patterns
-- **Interactive**: Click points for region details
-
-#### 3. Performance Matrix 🎯
-- **2x2 Grid**: Fast/Slow delivery vs High/Low revenue
-- **Opportunity Identification**: 
-  - Fast Delivery + High Revenue: Optimal performance
-  - Slow Delivery + High Revenue: Improvement opportunity
-  - Fast Delivery + Low Revenue: Growth potential
-  - Slow Delivery + Low Revenue: Priority focus areas
-
-## 🎨 Visual Design Features
-
-### Map Visualization
-- **Delivery Markers**: Circles with color gradient (green → yellow → red)
-- **Revenue Markers**: Purple circles with white borders
-- **Size Encoding**: Larger markers indicate higher values
-- **Dual Layer**: Offset positioning to show both metrics simultaneously
+- **Three view modes** — Delivery Time, Revenue, and Dual Layer
+- **Dual Layer view**: outer colored ring = delivery speed, inner solid circle = revenue
+- **Zoom-based aggregation** — automatically switches between aggregation levels as you zoom:
+  | Zoom | Level |
+  |------|-------|
+  | < 7  | State |
+  | 7–10 | City  |
+  | ≥ 11 | Zip code |
+- **7 map tile styles** — selectable from a dropdown in the top-right corner of the map (CartoDB Voyager, Light, Dark, Esri Gray, Stadia Smooth, OpenStreetMap, and more)
+- **Aggregation level badge** — bottom-left corner always shows the current zoom level
 
 ### Color Schemes
-- **Delivery Time**: Green (fast) to Red (slow) gradient
-- **Revenue**: Purple gradient (#F3E5F5 to #6A1B9A)
-- **UI Theme**: Professional blue gradient theme
-- **High Contrast**: White borders for visibility on map backgrounds
 
-### Interactive Elements
-- **Smooth Transitions**: Animated view switching
-- **Hover Effects**: Enhanced visual feedback
-- **Loading States**: Progress indicators during data updates
-- **Responsive Design**: Adapts to different screen sizes
+| Layer | Colors | Meaning |
+|-------|--------|---------|
+| Delivery Time | Green → Yellow → Orange → Red | ≤7 / 8–14 / 15–21 / >21 days |
+| Revenue | Light blue → Dark navy | Low → High revenue |
 
-## 🔧 Technical Architecture
+### Filters (Left Panel)
 
-### Data Integration
-- **BigQuery Source**: Real-time data from `fct_delivery_time_by_zip` and `fct_geo_revenue`
-- **Dual Data Streams**: Delivery performance + revenue analytics
-- **Smart Fallback**: Sample data when BigQuery unavailable
-- **JSON Format**: Optimized data structure for web visualization
+- **State selector** — multi-select with Select All / Deselect All
+- **City selector** — auto-updates based on selected states; includes a search bar
+- **Delivery time range slider** — dual-handle slider on a single axis to filter by a min–max day range (e.g. 10–15 days); only shown in Delivery and Dual views
 
-### Frontend Technologies
-- **Plotly.js**: Advanced mapping and charting
-- **Vanilla JavaScript**: No framework dependencies
-- **CSS3**: Modern styling with gradients and animations
-- **HTML5**: Semantic structure with accessibility features
+### Charts
 
-### Performance Optimizations
-- **Map State Persistence**: Maintains zoom/position across view switches
-- **Real-time Filtering**: Efficient data processing
-- **Event-driven Updates**: Only re-render when necessary
-- **Responsive Loading**: Progressive data loading
+#### Delivery vs Revenue Correlation
+Scatter plot of delivery days vs revenue per zip code region. Includes a linear regression trend line showing:
+- **Slope** — revenue change per extra delivery day
+- **R²** — how much of revenue variance is explained by delivery time alone
 
-## 📱 Usage Guide
+#### Regional Performance Score
+Horizontal bar chart of the top 10 and bottom 10 regions ranked by a composite score:
 
-### 1. Basic Navigation
-1. **Select States**: Choose regions of interest
-2. **Refine Cities**: Fine-tune with city-level selection
-3. **Set Time Filter**: Use slider to focus on delivery performance
-4. **Switch Views**: Compare delivery vs revenue patterns
+```
+Score (0–100) = (Revenue Score × 0.6) + (Delivery Speed Score × 0.4)
+```
 
-### 2. Advanced Analysis
-1. **Dual Layer Mode**: View both metrics simultaneously
-2. **Correlation Analysis**: Identify delivery-revenue relationships
-3. **Performance Matrix**: Find optimization opportunities
-4. **Geographic Drilling**: Zoom into specific regions
+Both sub-scores are normalised to the current filtered data, so scores shift when filters change.
 
-### 3. Business Insights
-- **High Revenue + Slow Delivery**: Priority improvement areas
-- **Fast Delivery Regions**: Model for expansion
-- **Revenue Concentration**: Identify key markets
-- **Performance Gaps**: Strategic investment opportunities
+### Explanatory Text
 
-## 📁 File Structure
+All metrics, charts, and controls include inline descriptions so viewers can understand what they are looking at without prior context.
+
+## Technical Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Data warehouse | BigQuery |
+| Transformation | dbt (staging → intermediate → marts) |
+| Map | Leaflet.js |
+| Charts | Plotly.js |
+| Frontend | Vanilla HTML/CSS/JavaScript |
+| Data fallback | Sample data generated in-browser when BigQuery unavailable |
+
+## Data Pipeline
+
+```
+Kaggle CSV files
+  → Google Cloud Storage
+    → BigQuery (raw tables)
+      → dbt models
+          staging/        (10 source models)
+          intermediate/   (4 joined models)
+          marts/core/     (fct_delivery_time_by_zip, fct_geo_revenue, fct_orders, 4 dim tables)
+          marts/business_intelligence/  (customer, financial, operational, product analytics)
+```
+
+See `Document/project_steps.md` for setup instructions including GCP service account, dbt profile configuration, and data loading scripts.
+
+## File Structure
 
 ```
 olist/notebook/
-├── brazil_delivery_revenue_dashboard.html    # Main dual-layer dashboard
-├── brazil_delivery_dashboard_with_cities.html # City-enabled dashboard
-├── dashboard_data_generator_en.py            # Data generator with revenue
-├── run_visible_test.py                       # Main server script
-├── run_dashboard_with_cities.py              # City dashboard server
-├── dashboard_data.json                       # Combined delivery + revenue data
-└── debug_revenue_map.html                    # Debug/testing page
+├── brazil_delivery_revenue_dashboard.html   # Main dashboard
+├── dashboard_data_generator_en.py           # Generates dashboard_data.json from BigQuery
+├── dashboard_data.json                      # Pre-generated data file
+└── run_delivery_revenue_dashboard.py        # HTTP server (port 8004)
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-### Common Issues
+| Issue | Fix |
+|-------|-----|
+| Blank map / no circles | Check browser console; verify `dashboard_data.json` exists |
+| City filter empty | Select at least one state first |
+| Circles not visible in dual view | Zoom in — at low zoom only the outer delivery ring may be visible |
+| Slow rendering | Use state/city filters or the delivery time range slider to reduce data volume |
 
-1. **Revenue Markers Not Visible**
-   - Ensure using `run_visible_test.py` server
-   - Check browser console for JavaScript errors
-   - Verify `dashboard_data.json` contains revenue data
+### Verify data file
 
-2. **City Filter Empty**
-   - Select at least one state first
-   - Cities auto-populate based on state selection
-   - Check data generator includes city information
-
-3. **Map Resets on View Switch**
-   - Fixed in latest version with map state persistence
-   - Zoom and position maintained across all view modes
-
-4. **Performance Issues**
-   - Large datasets may cause slow rendering
-   - Use delivery time slider to reduce data volume
-   - Consider state/city filtering for better performance
-
-### Data Validation
 ```bash
-# Verify data structure
 python3 -c "
 import json
-with open('dashboard_data.json', 'r') as f:
+with open('dashboard_data.json') as f:
     data = json.load(f)
-print('Keys:', list(data.keys()))
-print('Sample record:', list(data['data'][0].keys()))
+print('Records:', len(data['data']))
+print('Fields:', list(data['data'][0].keys()))
 "
 ```
 
-## 🔄 Updates and Maintenance
+### Refresh data from BigQuery
 
-### Data Refresh
 ```bash
-# Update with latest BigQuery data
+cd olist/notebook
 python3 dashboard_data_generator_en.py
 ```
 
-### Custom Configuration
-- **Revenue Scaling**: Modify marker size calculations
-- **Color Schemes**: Adjust gradient definitions
-- **Filter Ranges**: Update slider min/max values
-- **Map Defaults**: Change initial zoom and center position
-
-## 📊 Business Value
-
-### Strategic Insights
-- **Revenue-Performance Correlation**: Understand relationship between delivery speed and revenue
-- **Geographic Optimization**: Identify high-value regions for investment
-- **Service Level Planning**: Set realistic delivery expectations by region
-- **Market Expansion**: Find underserved high-potential areas
-
-### Operational Benefits
-- **Performance Monitoring**: Track delivery improvements over time
-- **Resource Allocation**: Focus investments on high-impact regions
-- **Customer Experience**: Optimize service levels by market
-- **Competitive Analysis**: Benchmark performance across regions
-
 ---
 
-**Version**: 2.0.0  
-**Last Updated**: December 2024  
-**Features**: Dual-layer visualization, revenue analytics, dynamic filtering  
+**Version**: 3.0.0
+**Last Updated**: May 2026
 **Compatibility**: Modern browsers with JavaScript ES6+ support
-
-## 🌟 Key Improvements from v1.0
-
-- **✅ Dual-Layer Mapping**: Simultaneous delivery and revenue visualization
-- **✅ Revenue Analytics**: Complete financial performance integration
-- **✅ Dynamic City Filtering**: State-based city selection
-- **✅ Delivery Time Slider**: Granular performance filtering
-- **✅ Map State Persistence**: Maintains view when switching modes
-- **✅ Enhanced Insights**: Automated business intelligence
-- **✅ Performance Matrix**: Strategic opportunity identification
-- **✅ Correlation Analysis**: Data-driven relationship discovery
-
-The dashboard now provides comprehensive business intelligence for Brazilian logistics operations, combining operational performance with financial outcomes for strategic decision-making.
