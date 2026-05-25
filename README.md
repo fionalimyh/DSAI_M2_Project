@@ -9,7 +9,7 @@ An interactive dual-layer web dashboard for analysing delivery performance and r
 ## Quick Start
 
 ```bash
-cd /Users/fengfeng/Dev/DSAI_M2_Project/olist/notebook
+cd olist/notebook
 python3 run_delivery_revenue_dashboard.py
 ```
 
