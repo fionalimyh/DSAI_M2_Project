@@ -11,9 +11,9 @@ from google.cloud import bigquery
 import os
 
 class DeliveryDashboardDataGenerator:
-    def __init__(self, project_id="brazil-olist"):
-        self.project_id = project_id
-        self.client = bigquery.Client(project=project_id)
+    def __init__(self, project_id=None):
+        self.project_id = project_id or os.getenv("GCP_PROJECT_ID", "brazil-olist")
+        self.client = bigquery.Client(project=self.project_id)
         
     def fetch_delivery_data(self):
         """Fetch delivery time data from BigQuery"""

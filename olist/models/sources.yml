@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: olist
     description: Brazilian e-commerce dataset
-    database: brazil-olist
+    database: "{{ env_var('GCP_PROJECT_ID', 'brazil-olist') }}"
     schema: Olist
     tables:
       - name: customer
